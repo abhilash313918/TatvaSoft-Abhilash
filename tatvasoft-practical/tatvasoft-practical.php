@@ -204,3 +204,37 @@ function tatvasoft_registration_form() {
 }
 // registration shortcode
 add_shortcode('tatvasoftregistration', 'tatvasoft_registration_form'); 
+
+// Add page on Plugin Activation.
+
+define( 'TATVASOFT_PLUGIN_FILE', __FILE__ );
+
+register_activation_hook( TATVASOFT_PLUGIN_FILE, 'tatvasoft_plugin_activation' );
+
+function tatvasoft_plugin_activation() {
+  if ( ! current_user_can( 'activate_plugins' ) ) return;
+  global $wpdb;
+  if ( null === $wpdb->get_row( "SELECT post_name FROM {$wpdb->prefix}posts WHERE post_name = 'new-page-slug'", 'ARRAY_A' ) ) {
+    $current_user = wp_get_current_user();
+
+    // create post object
+    $loginpage = array(
+      'post_title'  => __( 'Login Page' ),
+      'post_status' => 'publish',
+      'post_author' => $current_user->ID,
+      'post_type'   => 'page',
+      'post_content' => '[tatvasoftlogin]'
+    );
+    
+    $registrationpage = array(
+      'post_title'  => __( 'Registration Page' ),
+      'post_status' => 'publish',
+      'post_author' => $current_user->ID,
+      'post_type'   => 'page',
+      'post_content' => '[tatvasoftregistration]'
+    );
+    // insert the post into the database
+    wp_insert_post( $loginpage );
+    wp_insert_post( $registrationpage );
+  }
+}
